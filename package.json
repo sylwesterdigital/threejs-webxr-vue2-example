@@ -1,0 +1,62 @@
+{
+  "name": "threejs-webxr-vue2-example",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^34.1.0",
+    "@ckeditor/ckeditor5-vue2": "^3.0.1",
+    "autoprefixer": "10.4.5",
+    "axios": "^0.21.4",
+    "bootstrap": "^4.6.1",
+    "bootstrap-vue": "^2.22.0",
+    "core-js": "^3.8.3",
+    "gsap": "^3.10.4",
+    "md5": "^2.3.0",
+    "vue": "^2.6.14",
+    "vue-friendly-iframe": "^0.20.0",
+    "vue-horizontal-list": "^1.3.0",
+    "vue-icon": "^2.2.0",
+    "vue-meta": "^2.4.0",
+    "vue-router": "^3.5.4",
+    "vuelidate": "^0.7.7",
+    "vuex": "^3.6.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "sass": "^1.52.3",
+    "sass-loader": "^13.0.0",
+    "three": "^0.141.0",
+    "three-mesh-ui": "^6.4.4",
+    "vue-template-compiler": "^2.6.14"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
