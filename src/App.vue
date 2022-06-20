@@ -22,37 +22,11 @@
     },
     
     created() {
-      console.log(' - created:', this.$router.history.current.name, this.$router.history.current.fullPath)
-
+      console.log('App: created', this.$router.history.current.name, this.$router.history.current.fullPath )
     },
     
     mounted() {
-
-      console.log('App.vue',this.userDetails, this.isLogged);
-
-      if(this.$router.history.current.fullPath == "/opart") {
-        this.$router.push('/opart/info');
-      }
-      
-      if(this.$router.history.current.fullPath == "/login") {
-        this.$router.push('/login/person');
-      }
-      
-      if(this.$router.history.current.fullPath == "/register") {
-        this.$router.push('/register/person');
-      }
-      
-      if(this.$router.history.current.fullPath == "/messages") {
-        this.$router.push('/messages/inbox');
-      }       
-      
-      if(localStorage.getItem('accessToken') === null) {
-        //console.log("access_token:",localStorage.getItem('accessToken'))
-        this.isLogged = false;
-      } else {
-        this.isLogged = true;
-      }
-      //console.log('this.isLogged:',this.isLogged )
+      console.log('App: mounter' )
     },
     
     computed: {
