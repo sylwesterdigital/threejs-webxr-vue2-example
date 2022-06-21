@@ -2,10 +2,11 @@
     <div id="con3d">
         <quick-home-menu />
         <video id="video1" loop muted crossOrigin="anonymous" playsinline>
-            <source src="https://xr.workwork.fun/media/CCGF9667.MP4" type="video/mp4">
+            <source src="videos/CCGF9667.MP4" type="video/mp4">
         </video>
     </div>
 </template>
+
 <script>
 /* ---------------------------------- SCRIPT ---------------------------------- */
 
@@ -14,6 +15,11 @@ import VRControl from 'three-mesh-ui/examples/utils/VRControl.js';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
+
+import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+
 /* eslint-disable */
 
 import QuickHomeMenu from '../components/QuickHomeMenu.vue'
@@ -92,6 +98,7 @@ export default {
             camera: null,
             scene: null,
             renderer: null,
+            controls: null,
             mesh: null,
             show: false,
             things: [],
@@ -140,7 +147,7 @@ export default {
         //console.log(' - - - created')
     },
     destroyed() {
-        //console.log(' - - - destroyed')
+        console.log(' Video360.vue - - - destroyed')
     },
     beforeDestroy() {
         this.empty(document.getElementById('con3d'));
@@ -176,7 +183,7 @@ export default {
         initScene() {
 
             let con = document.getElementById('con3d');
-            console.log('app', con.offsetWidth, con.offsetHeight)
+            //console.log('app', con.offsetWidth, con.offsetHeight)
             var width = con.offsetWidth;
             var height = con.offsetHeight;
 
@@ -188,16 +195,16 @@ export default {
             this.renderer.setSize(window.innerWidth, window.innerHeight);
             this.renderer.xr.enabled = true;
             this.xr = this.renderer.xr
-            console.log(this.xr)
+            //console.log(this.xr)
             this.xr.getSession();
 
             con.appendChild(this.renderer.domElement);
             con.appendChild(VRButton.createButton(this.renderer));
 
             window.addEventListener('resize', this.handleResize)
-            window.addEventListener('pointerdown', this.onPointerDown);
-            window.addEventListener('pointermove', this.onPointerMove);
-            window.addEventListener('pointerup', this.onPointerUp);
+            // window.addEventListener('pointerdown', this.onPointerDown);
+            // window.addEventListener('pointermove', this.onPointerMove);
+            // window.addEventListener('pointerup', this.onPointerUp);
             window.addEventListener('keydown', function(event) {
                 const media = document.querySelector('video');
                 if (event.code == "Space") {
@@ -208,6 +215,21 @@ export default {
                     }
                 }
             });
+
+
+            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            //this.controls.maxPolarAngle = Math.PI * 0.495;
+
+            //controls.target.set(1, 1.3, 1);
+            // controls.minDistance = 0.5;
+            // controls.maxDistance = 55;
+            //this.camera.position.set(0, 1.3, 0);
+
+            this.controls.target = new THREE.Vector3(0, 0, 0);            
+
+
+
+
             this.animate();
             this.addVR(this.scene);
 
@@ -220,13 +242,13 @@ export default {
         },
 
         render() {
-            this.lat = Math.max(-85, Math.min(85, this.lat));
-            this.phi = THREE.MathUtils.degToRad(90 - this.lat);
-            this.theta = THREE.MathUtils.degToRad(this.lon);
-            this.camera.position.x = this.distance * Math.sin(this.phi) * Math.cos(this.theta);
-            this.camera.position.y = this.distance * Math.cos(this.phi);
-            this.camera.position.z = this.distance * Math.sin(this.phi) * Math.sin(this.theta);
-            this.camera.lookAt(0, 0, 0);
+            // this.lat = Math.max(-85, Math.min(85, this.lat));
+            // this.phi = THREE.MathUtils.degToRad(90 - this.lat);
+            // this.theta = THREE.MathUtils.degToRad(this.lon);
+            // this.camera.position.x = this.distance * Math.sin(this.phi) * Math.cos(this.theta);
+            // this.camera.position.y = this.distance * Math.cos(this.phi);
+            // this.camera.position.z = this.distance * Math.sin(this.phi) * Math.sin(this.theta);
+            // this.camera.lookAt(0, 0, 0);
             this.renderer.render(this.scene, this.camera);
         },
 
@@ -272,12 +294,6 @@ export default {
             return (new Date(ts)).toUTCString()
         },
         showDate(v) {
-            //      var date = new Date(v*1000);
-            //      var hours = date.getHours();
-            //      var minutes = "0" + date.getMinutes();
-            //      var seconds = "0" + date.getSeconds();
-            //      var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);      
-            //      return formattedTime;
             return (new Date(parseInt(v) * 1000))
         },
         tdif3(t) {
@@ -317,16 +333,6 @@ export default {
         },
         tdif(t) {
             var time = new Date(t)
-            //      var ua = navigator.userAgent.toLowerCase(); 
-            //      if (ua.indexOf('safari') != -1) { 
-            //        console.log('ua:',ua)
-            //        if (ua.indexOf('chrome') > -1) {
-            //        } else {
-            //           console.log('this is safari')
-            //          var newt = (t).split(" ").join("T")
-            //          time = new Date(newt).getTime();
-            //        }
-            //      }      
             var previous = t
             var current = new Date().getTime();
             var msPerMinute = 60 * 1000;
@@ -352,17 +358,6 @@ export default {
             }
         },
         tdif2(t) {
-            //      var time = new Date(t).getTime();
-            //      var ua = navigator.userAgent.toLowerCase(); 
-            //      if (ua.indexOf('safari') != -1) { 
-            //        console.log('ua:',ua)
-            //        if (ua.indexOf('chrome') > -1) {
-            //        } else {
-            //           console.log('this is safari')
-            //          var newt = (t).split(" ").join("T")
-            //          time = new Date(newt).getTime();
-            //        }
-            //      }    
             var previous = new Date(t).getTime();
             var current = new Date().getTime();
             var msPerMinute = 60 * 1000;

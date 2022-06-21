@@ -2,10 +2,11 @@
     <div id="con3d">
         <quick-home-menu />
         <video id="video1" loop muted crossOrigin="anonymous" playsinline>
-            <source src="https://xr.workwork.fun/media/CCGF9667.MP4" type="video/mp4">
+            <source src="https://stream.workwork.fun/hls/ipad2.m3u8" type="application/x-mpegURL">
         </video>
     </div>
 </template>
+
 <script>
 /* ---------------------------------- SCRIPT ---------------------------------- */
 
@@ -14,6 +15,13 @@ import VRControl from 'three-mesh-ui/examples/utils/VRControl.js';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
+
+import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+/* HLS Video */
+import Hls from 'hls.js'
+
 /* eslint-disable */
 
 import QuickHomeMenu from '../components/QuickHomeMenu.vue'
@@ -36,8 +44,7 @@ export default {
     components: {
         QuickHomeMenu
     },
-    name: 'Video360',
-    
+    name: 'Live360',
     props: {
         msg: String
     },
@@ -93,10 +100,15 @@ export default {
             camera: null,
             scene: null,
             renderer: null,
+            controls: null,
             mesh: null,
             show: false,
             things: [],
             xr: null,
+
+            hsl: null,
+            videoUserInitiated: false,
+
             session: null,
             session_init: null,
             isUserInteracting: false,
@@ -141,7 +153,7 @@ export default {
         //console.log(' - - - created')
     },
     destroyed() {
-        //console.log(' - - - destroyed')
+        console.log(' Video360.vue - - - destroyed')
     },
     beforeDestroy() {
         this.empty(document.getElementById('con3d'));
@@ -163,21 +175,178 @@ export default {
 
     methods: {
 
+
+    playVideo() {
+
+      const video = document.getElementById("video1")  
+
+      const hls = new Hls();  
+      //let videoSrc = videosData
+      let videoURL = "https://stream.workwork.fun/hls/ipad2.m3u8";
+      //videosData[videosData.findIndex( item => item.n === videoName )].url
+
+      /* first time user initiated action */
+      if(this.videoUserInitiated == false) {
+
+          console.log("videoURL, currentRoom", videoURL)
+          console.log('Hls.isSupported(): ', Hls.isSupported());
+
+          if (Hls.isSupported()) {
+            hls.loadSource(videoURL);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+
+              console.log('hls.on(Hls.Events.MANIFEST_PARSED - video.play()')
+              video.play();
+              // pause
+              //scene.getObjectByName("tvsetPlayButton").children[1].set({content: cD[cLang].video.pause})
+            });
+
+            hls.on(Hls.Events.ERROR, function(e) {
+              console.log('hls.on(Hls.Events.ERROR',e);
+              //sendReport(userID,"playVideo: error: "+e, videoURL)
+            });
+
+            // hls.on(Hls.Events.FRAG_CHANGED, function() {
+            //   console.log('hls.on(Hls.Events.FRAG_CHANGED');
+            // });
+
+
+          }
+
+          else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = videoURL;
+            video.addEventListener('loadedmetadata', function() {
+              console.log('loadedmetadata - video.play()')
+              video.play();
+              //sendReport(userID,"playVideo: loadedmetadata",videoURL)
+            });
+          }
+
+          // video.setAttribute("poster", "./assets/media/poster.jpg"),
+          // video.poster = "./assets/media/poster.jpg";
+          video.setAttribute("loop", "false"),
+          video.loop = false;
+          video.setAttribute("muted", ""),
+          video.setAttribute("playsinline", ""),
+          video.setAttribute("webkit-playsinline", ""),
+          video.setAttribute("crossorigin", "anonymous");
+
+          // var videoTexture = new THREE.VideoTexture(video);
+          // videoTexture.minFilter = THREE.LinearFilter
+          // videoTexture.magFilter = THREE.LinearFilter
+          // videoTexture.format = THREE.RGBFormat
+          // videoTexture.crossOrigin = "anonymous"
+
+          //var tvset = scene.getObjectByName("tvset");
+
+          //var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide });
+
+          //tvset.material  = movieMaterial;
+
+
+
+
+
+        const texture = new THREE.VideoTexture(video);
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+        const geometry = new THREE.SphereGeometry(500, 60, 40);
+        geometry.scale(-1, 1, 1);
+
+        const mesh = new THREE.Mesh(geometry, material);
+        this.scene.add(mesh);
+
+
+
+          video.addEventListener('ended', function(e) {
+              console.log('video ended -  - Playback has stopped because the end of the media was reached.',e);
+              // again
+              scene.getObjectByName("tvsetPlayButton").children[1].set({content: cD[cLang].video.again})
+              //sendReport(userID,"playVideo: ended",videoURL)
+              //this.videoUserInitiated =  false;
+          }, false);
+
+          video.addEventListener('progress', function(e) {
+             console.log('progress',e);
+             console.log(e.target.currentTime,e.target.duration)
+          }, false);
+
+
+          video.addEventListener('playing', function(e) {
+             console.log('playing',e);
+             //console.log(e.target.currentTime,e.target.duration)
+             videoEnded = e.target.ended;
+          }, false);
+
+          video.addEventListener('waiting', function(e) {
+             console.log('waiting - Playback has stopped because of a temporary lack of data',e);
+             //console.log(e.target.currentTime,e.target.duration)
+          }, false);
+
+          video.addEventListener('stalled', function(e) {
+             console.log('stalled - The user agent is trying to fetch media data, but data is unexpectedly not forthcoming.',e);
+             //console.log(e.target.currentTime,e.target.duration)
+          }, false);
+
+          video.addEventListener('emptied', function(e) {
+             console.log('emptied - The media has become empty; for example, this event is sent if the media has already been loaded (or partially loaded), and the load() method is called to reload it.',e);
+             //console.log(e.target.currentTime,e.target.duration)
+          }, false);
+
+          video.addEventListener('complete', function(e) {
+             console.log('complete - The rendering of an OfflineAudioContext is terminated.',e);
+             //console.log(e.target.currentTime,e.target.duration)
+          }, false);
+
+          //w.video = video;
+
+          this.videoUserInitiated = true
+
+        } else {
+
+            console.log('videoUserInitiated: ', this.videoUserInitiated);
+
+            // ThreeMeshUI.update();
+            //r.children[2].set({ fontColor: new THREE.Color( 0xffffff ), content: '\n\nA: '+qtext.a[0] } );
+
+            if(videoEnded == true || video.paused == true) {
+                video.play();
+                scene.getObjectByName("tvsetPlayButton").children[1].set({content: cD[cLang].video.pause})
+                //sendReport(userID,"playVideo: play",videoURL)
+            } else {
+                scene.getObjectByName("tvsetPlayButton").children[1].set({content: cD[cLang].video.play})
+                video.pause();
+                //sendReport(userID,"playVideo: pause",videoURL)
+
+            }
+
+        }
+
+        //sendReport(userID,"playVideo",videoURL)
+
+    },        
+
         addVR(scene) {
+            
             const video = document.getElementById("video1")
             video.play();
+
             const texture = new THREE.VideoTexture(video);
             const material = new THREE.MeshBasicMaterial({ map: texture });
             const geometry = new THREE.SphereGeometry(500, 60, 40);
             geometry.scale(-1, 1, 1);
+
             const mesh = new THREE.Mesh(geometry, material);
             this.scene.add(mesh);
+
+
         },
 
         initScene() {
 
             let con = document.getElementById('con3d');
-            console.log('app', con.offsetWidth, con.offsetHeight)
+            //console.log('app', con.offsetWidth, con.offsetHeight)
             var width = con.offsetWidth;
             var height = con.offsetHeight;
 
@@ -189,16 +358,16 @@ export default {
             this.renderer.setSize(window.innerWidth, window.innerHeight);
             this.renderer.xr.enabled = true;
             this.xr = this.renderer.xr
-            console.log(this.xr)
+            //console.log(this.xr)
             this.xr.getSession();
 
             con.appendChild(this.renderer.domElement);
             con.appendChild(VRButton.createButton(this.renderer));
 
             window.addEventListener('resize', this.handleResize)
-            window.addEventListener('pointerdown', this.onPointerDown);
-            window.addEventListener('pointermove', this.onPointerMove);
-            window.addEventListener('pointerup', this.onPointerUp);
+            // window.addEventListener('pointerdown', this.onPointerDown);
+            // window.addEventListener('pointermove', this.onPointerMove);
+            // window.addEventListener('pointerup', this.onPointerUp);
             window.addEventListener('keydown', function(event) {
                 const media = document.querySelector('video');
                 if (event.code == "Space") {
@@ -209,9 +378,25 @@ export default {
                     }
                 }
             });
-            this.animate();
-            this.addVR(this.scene);
 
+
+            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            //this.controls.maxPolarAngle = Math.PI * 0.495;
+
+            //controls.target.set(1, 1.3, 1);
+            // controls.minDistance = 0.5;
+            // controls.maxDistance = 55;
+            //this.camera.position.set(0, 1.3, 0);
+
+            this.controls.target = new THREE.Vector3(0, 0, 0);            
+
+
+
+
+            this.animate();
+
+            //this.addVR(this.scene);
+            this.playVideo();
 
             window.scene = this.scene;
 
@@ -221,13 +406,13 @@ export default {
         },
 
         render() {
-            this.lat = Math.max(-85, Math.min(85, this.lat));
-            this.phi = THREE.MathUtils.degToRad(90 - this.lat);
-            this.theta = THREE.MathUtils.degToRad(this.lon);
-            this.camera.position.x = this.distance * Math.sin(this.phi) * Math.cos(this.theta);
-            this.camera.position.y = this.distance * Math.cos(this.phi);
-            this.camera.position.z = this.distance * Math.sin(this.phi) * Math.sin(this.theta);
-            this.camera.lookAt(0, 0, 0);
+            // this.lat = Math.max(-85, Math.min(85, this.lat));
+            // this.phi = THREE.MathUtils.degToRad(90 - this.lat);
+            // this.theta = THREE.MathUtils.degToRad(this.lon);
+            // this.camera.position.x = this.distance * Math.sin(this.phi) * Math.cos(this.theta);
+            // this.camera.position.y = this.distance * Math.cos(this.phi);
+            // this.camera.position.z = this.distance * Math.sin(this.phi) * Math.sin(this.theta);
+            // this.camera.lookAt(0, 0, 0);
             this.renderer.render(this.scene, this.camera);
         },
 
@@ -273,12 +458,6 @@ export default {
             return (new Date(ts)).toUTCString()
         },
         showDate(v) {
-            //      var date = new Date(v*1000);
-            //      var hours = date.getHours();
-            //      var minutes = "0" + date.getMinutes();
-            //      var seconds = "0" + date.getSeconds();
-            //      var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);      
-            //      return formattedTime;
             return (new Date(parseInt(v) * 1000))
         },
         tdif3(t) {
@@ -318,16 +497,6 @@ export default {
         },
         tdif(t) {
             var time = new Date(t)
-            //      var ua = navigator.userAgent.toLowerCase(); 
-            //      if (ua.indexOf('safari') != -1) { 
-            //        console.log('ua:',ua)
-            //        if (ua.indexOf('chrome') > -1) {
-            //        } else {
-            //           console.log('this is safari')
-            //          var newt = (t).split(" ").join("T")
-            //          time = new Date(newt).getTime();
-            //        }
-            //      }      
             var previous = t
             var current = new Date().getTime();
             var msPerMinute = 60 * 1000;
@@ -353,17 +522,6 @@ export default {
             }
         },
         tdif2(t) {
-            //      var time = new Date(t).getTime();
-            //      var ua = navigator.userAgent.toLowerCase(); 
-            //      if (ua.indexOf('safari') != -1) { 
-            //        console.log('ua:',ua)
-            //        if (ua.indexOf('chrome') > -1) {
-            //        } else {
-            //           console.log('this is safari')
-            //          var newt = (t).split(" ").join("T")
-            //          time = new Date(newt).getTime();
-            //        }
-            //      }    
             var previous = new Date(t).getTime();
             var current = new Date().getTime();
             var msPerMinute = 60 * 1000;

@@ -1,11 +1,9 @@
 <template>
     <div id="con3d">
         <quick-home-menu />
-        <video id="video1" loop muted crossOrigin="anonymous" playsinline>
-            <source src="https://xr.workwork.fun/media/CCGF9667.MP4" type="video/mp4">
-        </video>
     </div>
 </template>
+
 <script>
 /* ---------------------------------- SCRIPT ---------------------------------- */
 
@@ -14,7 +12,14 @@ import VRControl from 'three-mesh-ui/examples/utils/VRControl.js';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
+
+import { BoxLineGeometry } from 'three/examples/jsm/geometries/BoxLineGeometry.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+
 /* eslint-disable */
+import { BasisTextureLoader } from 'three/examples/jsm/loaders/BasisTextureLoader.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 import QuickHomeMenu from '../components/QuickHomeMenu.vue'
 
@@ -36,8 +41,7 @@ export default {
     components: {
         QuickHomeMenu
     },
-    name: 'Video360',
-    
+    name: 'Image360',
     props: {
         msg: String
     },
@@ -90,10 +94,18 @@ export default {
             keyRIGHT: false,
             /* THREE.js */
             animID: "animID",
+
+
             camera: null,
             scene: null,
             renderer: null,
             mesh: null,
+            basisLoader: null,
+            ktx2Loader: null,
+
+            controls: null,
+
+
             show: false,
             things: [],
             xr: null,
@@ -133,22 +145,24 @@ export default {
             show: true
         }
     },
+
     mounted() {
         //console.log(' - - - mounted') 
         this.initScene()
     },
+
     created() {
         //console.log(' - - - created')
     },
+
     destroyed() {
-        //console.log(' - - - destroyed')
+        console.log("Image360.vue - - - destroyed")
     },
+
     beforeDestroy() {
         this.empty(document.getElementById('con3d'));
         //console.log(' - - - before Destroyed')  
     },
-
-
 
 
     /* ---------------------------------- METHODS ---------------------------------- */
@@ -162,7 +176,7 @@ export default {
 
 
     methods: {
-
+/*
         addVR(scene) {
             const video = document.getElementById("video1")
             video.play();
@@ -172,12 +186,62 @@ export default {
             geometry.scale(-1, 1, 1);
             const mesh = new THREE.Mesh(geometry, material);
             this.scene.add(mesh);
+        },*/
+
+        flipY( geometry ) {
+            const uv = geometry.attributes.uv;
+            for ( let i = 0; i < uv.count; i ++ ) {
+                uv.setY( i, 1 - uv.getY( i ) );
+            }
+            return geometry;
         },
+
+        addVRImage(scene) {
+
+            // const video = document.getElementById("video1")
+            // video.play();
+            
+            // const texture = new THREE.VideoTexture(video);
+            // const material = new THREE.MeshBasicMaterial({ map: texture });
+            // const geometry = new THREE.SphereGeometry(500, 60, 40);
+            // geometry.scale(-1, 1, 1);
+            // const mesh = new THREE.Mesh(geometry, material);
+            // this.scene.add(mesh);
+
+            // this.basisLoader.detectSupport(this.renderer);
+
+            // this.basisLoader.load(
+            //     './images/RIRI9912_FLIP.basis',
+            //     (boxTexture) => {
+            //         const rt = new THREE.WebGLCubeRenderTarget(boxTexture.image.height);
+            //         rt.fromEquirectangularTexture(this.renderer, boxTexture);
+            //         this.scene.background = rt.texture;
+            //     });
+
+
+            /* Tried KTX but this code below is not ready */
+            this.ktx2Loader.detectSupport(this.renderer);
+
+            this.ktx2Loader.load(
+                //'./images/RIRI9912_FLIP.basis',
+                './images/RIRI9912_FLIP.ktx2',
+                (boxTexture) => {
+                    const rt = new THREE.WebGLCubeRenderTarget(boxTexture.image.height);
+                    rt.fromEquirectangularTexture(this.renderer, boxTexture);
+                    this.scene.background = rt.texture;
+                });
+
+
+
+        },        
 
         initScene() {
 
+
+            /* Camera, Scene, Renderer */
+
             let con = document.getElementById('con3d');
-            console.log('app', con.offsetWidth, con.offsetHeight)
+            //console.log('app', con.offsetWidth, con.offsetHeight)
             var width = con.offsetWidth;
             var height = con.offsetHeight;
 
@@ -189,45 +253,72 @@ export default {
             this.renderer.setSize(window.innerWidth, window.innerHeight);
             this.renderer.xr.enabled = true;
             this.xr = this.renderer.xr
-            console.log(this.xr)
+            //console.log(this.xr)
             this.xr.getSession();
 
             con.appendChild(this.renderer.domElement);
+
             con.appendChild(VRButton.createButton(this.renderer));
 
             window.addEventListener('resize', this.handleResize)
-            window.addEventListener('pointerdown', this.onPointerDown);
-            window.addEventListener('pointermove', this.onPointerMove);
-            window.addEventListener('pointerup', this.onPointerUp);
-            window.addEventListener('keydown', function(event) {
-                const media = document.querySelector('video');
-                if (event.code == "Space") {
-                    if (media.paused) {
-                        media.play();
-                    } else {
-                        media.pause();
-                    }
-                }
-            });
+            // window.addEventListener('pointerdown', this.onPointerDown);
+            // window.addEventListener('pointermove', this.onPointerMove);
+            // window.addEventListener('pointerup', this.onPointerUp);
+
+            // window.addEventListener('keydown', function(event) {
+            //     const media = document.querySelector('video');
+            //     if (event.code == "Space") {
+            //         if (media.paused) {
+            //             media.play();
+            //         } else {
+            //             media.pause();
+            //         }
+            //     }
+            // });
+
+
+            // this.basisLoader = new BasisTextureLoader();
+            // this.basisLoader.setTranscoderPath( 'js/' );
+
+            this.ktx2Loader = new KTX2Loader();
+            this.ktx2Loader.setTranscoderPath( 'js/libs/' );
+            this.ktx2Loader.detectSupport( this.renderer );
+
+
+            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            //this.controls.maxPolarAngle = Math.PI * 0.495;
+
+            //controls.target.set(1, 1.3, 1);
+            // controls.minDistance = 0.5;
+            // controls.maxDistance = 55;
+            //this.camera.position.set(0, 1.3, 0);
+
+            this.controls.target = new THREE.Vector3(0, 0, 0);            
+
+
             this.animate();
-            this.addVR(this.scene);
+
+            this.addVRImage(this.scene);
 
 
-            window.scene = this.scene;
+            // window.scene = this.scene;
+            // window.render = this.render;
 
-            window.render = this.render;
             this.handleResize()
             this.show = true;
         },
 
         render() {
-            this.lat = Math.max(-85, Math.min(85, this.lat));
-            this.phi = THREE.MathUtils.degToRad(90 - this.lat);
-            this.theta = THREE.MathUtils.degToRad(this.lon);
-            this.camera.position.x = this.distance * Math.sin(this.phi) * Math.cos(this.theta);
-            this.camera.position.y = this.distance * Math.cos(this.phi);
-            this.camera.position.z = this.distance * Math.sin(this.phi) * Math.sin(this.theta);
-            this.camera.lookAt(0, 0, 0);
+
+            // this.lat = Math.max(-85, Math.min(85, this.lat));
+            // this.phi = THREE.MathUtils.degToRad(90 - this.lat);
+            // this.theta = THREE.MathUtils.degToRad(this.lon);
+            // this.camera.position.x = this.distance * Math.sin(this.phi) * Math.cos(this.theta);
+            // this.camera.position.y = this.distance * Math.cos(this.phi);
+            // this.camera.position.z = this.distance * Math.sin(this.phi) * Math.sin(this.theta);
+            // this.camera.lookAt(0, 0, 0);
+
+
             this.renderer.render(this.scene, this.camera);
         },
 
@@ -235,22 +326,23 @@ export default {
             this.renderer.setAnimationLoop(this.render);
         },
 
-        onPointerDown(event) {
-            this.isUserInteracting = true;
-            this.onPointerDownPointerX = event.clientX;
-            this.onPointerDownPointerY = event.clientY;
-            this.onPointerDownLon = this.lon;
-            this.onPointerDownLat = this.lat;
-        },
-        onPointerMove(event) {
-            if (this.isUserInteracting === true) {
-                this.lon = (this.onPointerDownPointerX - event.clientX) * 0.1 + this.onPointerDownLon;
-                this.lat = (this.onPointerDownPointerY - event.clientY) * 0.1 + this.onPointerDownLat;
-            }
-        },
-        onPointerUp() {
-            this.isUserInteracting = false;
-        },
+        // onPointerDown(event) {
+        //     this.isUserInteracting = true;
+        //     this.onPointerDownPointerX = event.clientX;
+        //     this.onPointerDownPointerY = event.clientY;
+        //     this.onPointerDownLon = this.lon;
+        //     this.onPointerDownLat = this.lat;
+        // },
+        // onPointerMove(event) {
+        //     if (this.isUserInteracting === true) {
+        //         this.lon = (this.onPointerDownPointerX - event.clientX) * 0.1 + this.onPointerDownLon;
+        //         this.lat = (this.onPointerDownPointerY - event.clientY) * 0.1 + this.onPointerDownLat;
+        //     }
+        // },
+        // onPointerUp() {
+        //     this.isUserInteracting = false;
+        // },
+
         handleResize(event) {
             this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
@@ -273,12 +365,6 @@ export default {
             return (new Date(ts)).toUTCString()
         },
         showDate(v) {
-            //      var date = new Date(v*1000);
-            //      var hours = date.getHours();
-            //      var minutes = "0" + date.getMinutes();
-            //      var seconds = "0" + date.getSeconds();
-            //      var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);      
-            //      return formattedTime;
             return (new Date(parseInt(v) * 1000))
         },
         tdif3(t) {
@@ -318,16 +404,6 @@ export default {
         },
         tdif(t) {
             var time = new Date(t)
-            //      var ua = navigator.userAgent.toLowerCase(); 
-            //      if (ua.indexOf('safari') != -1) { 
-            //        console.log('ua:',ua)
-            //        if (ua.indexOf('chrome') > -1) {
-            //        } else {
-            //           console.log('this is safari')
-            //          var newt = (t).split(" ").join("T")
-            //          time = new Date(newt).getTime();
-            //        }
-            //      }      
             var previous = t
             var current = new Date().getTime();
             var msPerMinute = 60 * 1000;
@@ -353,17 +429,6 @@ export default {
             }
         },
         tdif2(t) {
-            //      var time = new Date(t).getTime();
-            //      var ua = navigator.userAgent.toLowerCase(); 
-            //      if (ua.indexOf('safari') != -1) { 
-            //        console.log('ua:',ua)
-            //        if (ua.indexOf('chrome') > -1) {
-            //        } else {
-            //           console.log('this is safari')
-            //          var newt = (t).split(" ").join("T")
-            //          time = new Date(newt).getTime();
-            //        }
-            //      }    
             var previous = new Date(t).getTime();
             var current = new Date().getTime();
             var msPerMinute = 60 * 1000;

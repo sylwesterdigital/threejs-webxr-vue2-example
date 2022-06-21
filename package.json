@@ -16,6 +16,7 @@
     "bootstrap-vue": "^2.22.0",
     "core-js": "^3.8.3",
     "gsap": "^3.10.4",
+    "hls.js": "^1.1.5",
     "md5": "^2.3.0",
     "vue": "^2.6.14",
     "vue-friendly-iframe": "^0.20.0",
