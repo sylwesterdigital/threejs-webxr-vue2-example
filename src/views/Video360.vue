@@ -2,7 +2,7 @@
     <div id="con3d">
         <quick-home-menu />
         <video id="video1" loop muted crossOrigin="anonymous" playsinline>
-            <source src="videos/CCGF9667.MP4" type="video/mp4">
+            <source src="videos/KHPX1669.MP4" type="video/mp4">
         </video>
     </div>
 </template>
@@ -53,7 +53,7 @@ export default {
     data: function() {
         return {
             videoData: {
-                src: "./assets/videos/OJQR7915.MP4"
+                src: "./videos/KHPX1669.MP4"
             },
             /* Camera */
             camTarget: {
@@ -170,6 +170,17 @@ export default {
     methods: {
 
         addVR(scene) {
+
+
+            const room = new THREE.LineSegments(
+                new BoxLineGeometry( 200, 200, 200, 5, 5, 5 ).translate( 0, 0, 0 ),
+                new THREE.LineBasicMaterial( { color: 0x808080 } )
+            );
+            this.scene.add( room );
+            room.name = "room"
+            window.room = room;
+
+
             const video = document.getElementById("video1")
             video.play();
             const texture = new THREE.VideoTexture(video);

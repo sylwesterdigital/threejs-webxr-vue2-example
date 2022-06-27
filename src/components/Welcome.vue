@@ -15,21 +15,21 @@
 
           
           <div>
-            <b-img src="https://immersive-web.github.io/webxr-samples/media/logo/webxr-logo.svg" fluid alt="Responsive image"></b-img>
+            <b-img src="https://immersive-web.github.io/webxr-samples/media/logo/webxr-logo.svg" fluid-grow rounded alt="Responsive image"></b-img>
           </div>          
 
 
-           Web XR API - Vue
+           360 XR + Vue.js
 
           </template>
               
                
 
-          <template v-slot:lead>Lead text</template>
+          <template v-slot:lead><span style="color: red">WebXR</span> is a group of standards which are used together to support rendering <span style="color: red">3D scenes</span> to hardware designed for presenting virtual worlds (virtual reality, or VR), or for adding graphical imagery to the real world, (augmented reality, or AR). The <span style="color: red">WebXR Device API</span> implements the core of the <span style="color: red">WebXR</span> feature set, managing the selection of output devices, render the 3D scene to the chosen device at the appropriate frame rate, and manage motion vectors created using input controllers.</template>
           
         <hr class="my-4">
         
-        <p> Paragraph text </p>
+        <p> Check:  <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API">https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API</a> </p>
         
         <div class="row">
          

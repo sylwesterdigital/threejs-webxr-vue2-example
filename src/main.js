@@ -11,12 +11,15 @@ import Vuelidate from 'vuelidate'
 Vue.use(Vuelidate)
 
 import VueMeta from 'vue-meta'
+
 Vue.use(VueMeta, {
   // optional pluginOptions
   refreshOnceOnNavigation: true
 })
 
-Vue.config.productionTip = false
+// Vue.config.productionTip = false;
+// Vue.config.devtools = false;
+
 
 import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue)

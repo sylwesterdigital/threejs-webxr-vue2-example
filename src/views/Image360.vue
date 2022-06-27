@@ -219,12 +219,23 @@ export default {
             //     });
 
 
+            const room = new THREE.LineSegments(
+                new BoxLineGeometry( 200, 200, 200, 5, 5, 5 ).translate( 0, 0, 0 ),
+                new THREE.LineBasicMaterial( { color: 0x808080 } )
+            );
+            this.scene.add( room );
+            room.name = "room"
+            window.room = room;
+
+
+
+
             /* Tried KTX but this code below is not ready */
             this.ktx2Loader.detectSupport(this.renderer);
 
             this.ktx2Loader.load(
                 //'./images/RIRI9912_FLIP.basis',
-                './images/RIRI9912_FLIP.ktx2',
+                './images/RZNX2075_4K.ktx2',
                 (boxTexture) => {
                     const rt = new THREE.WebGLCubeRenderTarget(boxTexture.image.height);
                     rt.fromEquirectangularTexture(this.renderer, boxTexture);
@@ -247,7 +258,12 @@ export default {
 
             this.camera = new THREE.PerspectiveCamera(75, width / height, 1, 1100);
             this.camera.position.set(14, 1, 21);
+
+            window.camera = this.camera;
+
             this.scene = new THREE.Scene();
+
+            window.scene = this.scene;
 
             this.renderer = new THREE.WebGLRenderer({ antialias: true });
             this.renderer.setSize(window.innerWidth, window.innerHeight);
